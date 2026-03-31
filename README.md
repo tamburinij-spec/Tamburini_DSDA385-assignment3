@@ -96,10 +96,10 @@ python task1_glove.py  | tee results_task1_glove.txt
 
 | Model | Embedding | Final Loss | Perplexity |
 |---|---|---|---|
-| LSTM | One-Hot | 0.9689 | 2.6 |
-| LSTM | GloVe | *(insert)* | *(insert)* |
-| GRU | One-Hot | *(insert)* | *(insert)* |
-| GRU | GloVe | *(insert)* | *(insert)* |
+| LSTM | One-Hot | 0.9689 | 2.63 |
+| LSTM | GloVe | 2.3642 | 10.64 |
+| GRU | One-Hot | 1.3773 | 3.96 |
+| GRU | GloVe | 2.4486 | 11.57 |
 
 **Sample generated text (LSTM + One-Hot):**
 ```
@@ -108,7 +108,7 @@ Sample → to be or not to be the people in him and he that <unk> his receipt ev
 
 **Sample generated text (GRU + GloVe):**
 ```
-*(paste output of generate() from task1_glove.py here)*
+Sample → to be or not to be ' or else he does bid like to <unk> his own liking that if the which had been put not a good <unk> work nor well <unk> tell you what he is fetch out with a tailor a grave upon
 ```
 
 ---
@@ -123,16 +123,28 @@ python task2_glove.py  | tee results_task2_glove.txt
 
 | Model | Embedding | Final BLEU |
 |---|---|---|
-| LSTM Encoder-Decoder | One-Hot | *(insert)* |
-| GRU Encoder-Decoder | GloVe | *(insert)* |
+| LSTM Encoder-Decoder | One-Hot | 0.0669 |
+| GRU Encoder-Decoder | GloVe | 0.0543 |
+
+**Sample translations (LSTM + One-Hot):**
+
+| English | Predicted | Ground Truth |
+|---|---|---|
+| come here soon | ven venid | ven pronto aquí |
+| you may go | podéis iros | pueden irse |
+| i've lost | he perdido | he perdido |
+| don't die | no se | no os muráis |
+| that'll work | eso trabajo |  eso me valdrá |
 
 **Sample translations (GRU + GloVe):**
 
 | English | Predicted | Ground Truth |
 |---|---|---|
-| *(insert)* | *(insert)* | *(insert)* |
-| *(insert)* | *(insert)* | *(insert)* |
-| *(insert)* | *(insert)* | *(insert)* |
+| here you are | aquí tienes | al fin te encuentro |
+| row faster | rema más rápido | remen más rápido |
+| you need it | lo necesitas | usted lo necesita |
+| fire | no se movió | incendio |
+| we need help | necesitamos ayuda | necesitamos ayuda |
 
 ---
 
@@ -142,7 +154,25 @@ python task2_glove.py  | tee results_task2_glove.txt
 
 GRUs have fewer parameters than LSTMs because they use two gates (reset and update) instead of three (input, forget, output) and have no separate cell state. In practice this means GRUs train faster per epoch and are less prone to overfitting on smaller datasets. LSTMs can in principle capture longer-range dependencies more precisely due to the cell state, which may give them an edge on longer Shakespeare sequences. Whether this advantage materialises depends on the dataset size and training duration.
 
-*(Once you have numbers: comment here on which architecture achieved lower perplexity / higher BLEU and by how much.)*
+From the experimental results, **LSTM clearly outperformed GRU on the text generation task**:
+
+- **One-hot embeddings:**
+  - LSTM perplexity: **2.63**
+  - GRU perplexity: **3.96**
+
+- **GloVe embeddings:**
+  - LSTM perplexity: **10.64**
+  - GRU perplexity: **11.57**
+
+This indicates that for the Shakespeare dataset (≈204k tokens, sequence length 30), the LSTM’s ability to model longer dependencies provided a measurable performance benefit.
+
+For the translation task, results are not perfectly controlled (different embeddings per model), but a comparison still provides insight:
+
+- LSTM (one-hot): **BLEU = 0.0669**
+- GRU (GloVe): **BLEU = 0.0543**
+
+Even with simpler embeddings, the LSTM achieved a higher BLEU score, suggesting stronger sequence modeling in this context.
+
 
 ### Embedding comparison (One-Hot vs GloVe)
 
@@ -150,7 +180,21 @@ One-hot/random embeddings start with no linguistic knowledge and must learn toke
 
 However, GloVe embeddings are frozen during training in this implementation, which means the model cannot adapt them to the specific domain (Early Modern English for Shakespeare, or short conversational sentences for spa-eng). In some cases, trainable random embeddings can outperform frozen GloVe vectors if the training set is large enough and domain-specific vocabulary is important.
 
-*(Once you have numbers: comment here on whether GloVe embeddings improved or hurt performance, and hypothesise why.)*
+- **LSTM:**
+  - One-hot: **2.63**
+  - GloVe: **10.64**
+
+- **GRU:**
+  - One-hot: **3.96**
+  - GloVe: **11.57**
+
+This large gap suggests that pretrained embeddings were not well suited to this dataset.
+
+A key reason is **domain mismatch**. Shakespeare’s language includes many archaic or uncommon words (e.g., *thou*, *hath*, *dost*) that are poorly represented in GloVe. As a result, many tokens received zero vectors, reducing the effectiveness of pretrained embeddings.
+
+Additionally, GloVe embeddings were **frozen during training**, preventing the model from adapting them to the dataset. In contrast, the randomly initialised embeddings were fully trainable and could specialise to the Shakespeare corpus.
+
+For the translation task, the comparison is less direct due to differing architectures, but the **one-hot LSTM (BLEU = 0.0669)** still outperformed the **GloVe GRU (BLEU = 0.0543)**, indicating that trainable embeddings were at least competitive, if not superior, in this setup.
 
 ---
 
