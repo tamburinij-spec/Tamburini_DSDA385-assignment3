@@ -1,5 +1,5 @@
 ### Jacopo Tamburini<br>Mar 30, 2026<br>DSDA 385<br>Professor S. Kiani
-# Assignment 3: Natural Language Processing
+# Natural Language Processing
 
 ## 1. Project Overview
 
