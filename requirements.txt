@@ -1,7 +1,0 @@
-torch
-torchtext
-numpy
-nltk
-tqdm
-scikit-learn
-psutil
